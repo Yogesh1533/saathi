@@ -4,10 +4,22 @@ import shutil
 import subprocess
 import tempfile
 import threading
+import os
+import re
 import wave
 from pathlib import Path
 
 from .. import config
+
+# English voices read "Saathi" as "Say-thee" or "Sath-eye". साथी is said
+# "saa-tee": a long open "aa" and a soft t, no English "th". Respell it
+# before synthesis; SAATHI_SAY in .env overrides the respelling.
+_SAY = os.getenv("SAATHI_SAY", "Saahtee")
+_NAME = re.compile(r"\bsaathi\b|साथी", re.I)
+
+
+def pronounce(text):
+    return _NAME.sub(_SAY, text)
 
 
 def speak(text):
@@ -22,6 +34,7 @@ def synthesize(text):
     """Text -> (audio bytes, mime type), without playing it. The HUD sends
     these bytes to the browser, which plays them and animates the reactor."""
     provider = config.TTS_PROVIDER
+    text = pronounce(text)
     if provider == "elevenlabs":
         return _elevenlabs(text), "audio/mpeg"
     if provider == "openai":

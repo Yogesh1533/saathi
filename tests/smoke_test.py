@@ -1148,6 +1148,13 @@ embeddings.available = real_available
 memory.delete("warm-fact", _confirmed=True)
 history.clear()
 
+print("== pronunciation ==")
+from saathi.audio import tts as tts_mod
+
+check("name respelled for the voice", tts_mod.pronounce("Hi, I'm Saathi.") == "Hi, I'm Saahtee.")
+check("Devanagari name respelled", "Saahtee" in tts_mod.pronounce("साथी here"))
+check("other words untouched", tts_mod.pronounce("Saathiya sathi") == "Saathiya sathi")
+
 print("== web search (live, needs network) ==")
 try:
     from saathi.tools import websearch
