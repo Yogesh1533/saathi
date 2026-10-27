@@ -76,7 +76,7 @@ orb to talk. Everything else works out of the box. Details follow.
 
 - macOS or Windows laptop with a microphone (Raspberry Pi works too, but
   use a small Whisper model).
-- Python 3.9+ for the API backend, 3.10+ for the subscription backend
+- Python 3.10+ (3.12 recommended)
   (tip: `uv venv --python 3.12 .venv` gets you a modern Python without
   touching the system one).
 - Claude access: either a Claude subscription (Pro/Max) or an Anthropic
