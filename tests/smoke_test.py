@@ -285,6 +285,11 @@ reply = nb.chat("hello")
 check("nebius: API error gives a spoken apology", "couldn't reach" in reply)
 check("nebius: failed turn rolled back from history", nb.messages == before)
 
+check("nebius: markdown stripped for speech", nebius_backend.clean(
+    "You've got **two** skills:\n• **end-of-day** wraps up\n- `bank-call` [docs](https://x.y)\n## Done")
+    == "You've got two skills:\nend-of-day wraps up\nbank-call docs\nDone")
+check("nebius: maths and plain asterisks survive", nebius_backend.clean("3 * 4 is 12") == "3 * 4 is 12")
+
 print("== router ==")
 from saathi import router  # noqa: E402
 
