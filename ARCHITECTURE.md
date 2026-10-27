@@ -147,7 +147,7 @@ privileges. The microphone is granted only to the local server's origin.
 | Piece | File(s) | Notes |
 |---|---|---|
 | Config | `saathi/config.py`, `.env` | All keys, paths, and timings. Nothing sensitive in code. |
-| Wake word | `audio/wake.py` | openWakeWord with a custom-trained `models/hey_saathi.onnx`, ONNX runtime, 80 ms frames at 16 kHz. Runs continuously; nothing is recorded or sent anywhere until it fires. |
+| Wake word | `audio/wake.py` | openWakeWord with a custom-trained `models/hey_saathi.onnx` when present; otherwise `audio/spotter.py` cuts idle speech into bursts (Silero VAD), transcribes each with the local Whisper model and wakes on the name. ONNX runtime, 80 ms frames at 16 kHz. Runs continuously; nothing is recorded or sent anywhere until it fires. |
 | Turn-taking | `audio/turns.py`, `audio/recorder.py` | Silero VAD + transcript-based end-of-turn (see above). |
 | STT | `audio/stt.py` | Whisper large-v3-turbo on the Apple GPU via `mlx-whisper` (default on Apple Silicon), `faster-whisper` on the CPU elsewhere, or the OpenAI Whisper API (`STT_PROVIDER=openai`). `STT_VOCABULARY` primes it with names to expect. |
 | Brain | `saathi/assistant.py` | Multi-turn conversation, manual tool loop, prompt caching (`cache_control` on the system block), refusal handling with server-side model fallback. |

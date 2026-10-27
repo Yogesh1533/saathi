@@ -14,9 +14,11 @@ Built by Yogesh Dhakal for the Nebius x NVIDIA Global AI Hackathon
 
 ## What makes it personal, and private
 
-- **Local senses.** The wake word (a custom-trained "Hey Saathi" model),
-  speech recognition (Whisper on the Mac's GPU) and memory search run on the
-  Mac. No audio leaves the machine.
+- **Local senses.** The wake word, speech recognition (Whisper on the Mac's
+  GPU) and memory search run on the Mac. No audio leaves the machine.
+  openWakeWord has no "Hey Saathi" model, so by default Saathi transcribes
+  short bursts of idle speech locally and wakes on its name; a trained model
+  is used instead when present (`docs/wake-word.md`).
 - **A privacy vault.** Email addresses, phone numbers and card numbers are
   replaced with placeholders like `[EMAIL_1]` in everything sent to Nebius:
   your saved memories, what you say, and tool results such as emails. Real
@@ -66,9 +68,8 @@ cd frontend && npm install && npm run build && cd ..
 python -m saathi web                       # the full interface at http://127.0.0.1:8765
 ```
 
-Gmail and Calendar need a one-time Google sign-in (section 5). The wake word
-needs a trained model (`docs/wake-word.md`); until then press Space or tap the
-orb to talk. Everything else works out of the box. Details follow.
+Gmail and Calendar need a one-time Google sign-in (section 5). Say "Hey
+Saathi", or press Space or tap the orb to talk. Details follow.
 
 ---
 

@@ -462,6 +462,47 @@ tools.execute("skill_delete", {"name": "pr-review"}, lambda p: True)
 check("skills: confirmed delete removes it", not (config.SKILLS_DIR / "pr-review.md").exists())
 check("skills: starter skills can't be deleted", "starter skill" in tools.execute("skill_delete", {"name": "end-of-day"}, lambda p: True)[0])
 
+print("== wake on the name ==")
+from saathi import web  # noqa: E402
+from saathi.audio import spotter  # noqa: E402
+
+check("spot: 'Hey Saathi' alone", spotter.match("Hey Saathi.") == (True, ""))
+check("spot: request in the same breath", spotter.match("Hey, Saathi, what's the time?") == (True, "what's the time?"))
+check("spot: common mishearings", all(spotter.match(t)[0] for t in ("Sathi, pause the music", "okay saati", "Hi Sarthi")))
+check("spot: the name later in a sentence doesn't wake", not spotter.match("I told my saathi about it")[0])
+check("spot: other words don't wake", not any(spotter.match(t)[0] for t in ("Thank you.", "Satisfied?", "hey Siri")))
+
+ns = spotter.NameSpotter()
+silence, voice = np.zeros(1280, dtype=np.int16), np.ones(1280, dtype=np.int16)
+out = [ns.feed(silence, 0.0) for _ in range(5)] + [ns.feed(voice, 0.9) for _ in range(10)]
+out += [ns.feed(silence, 0.05) for _ in range(spotter.END_QUIET)]
+bursts = [b for b in out if b is not None]
+check("spot: one burst per stretch of speech", len(bursts) == 1)
+check("spot: burst keeps pre-roll and trailing quiet",
+      len(bursts[0]) == 1280 * (spotter.PREROLL + 10 - spotter.ONSET_NEEDED + spotter.END_QUIET))
+ns.reset()
+blips = [ns.feed(voice, 0.9) for _ in range(3)] + [ns.feed(silence, 0.0) for _ in range(spotter.END_QUIET + 1)]
+check("spot: a click too short to be speech is ignored", all(b is None for b in blips))
+
+events = []
+fake_hub = SimpleNamespace(
+    confirm=None, on_wake=lambda: events.append("wake"), emit=lambda m: events.append(m.get("type")),
+    set_state=lambda st: events.append(st), on_utterance=lambda t, p: events.append(("ask", t, p)),
+)
+vp = web.VoicePipeline(fake_hub)
+vp.spotter, vp.mode = spotter.NameSpotter(), "sleep"
+_real_stt = web.stt.transcribe
+web.stt.transcribe = lambda a: "Hey Saathi, set a timer for ten minutes."
+check("spot: name plus request goes straight to the brain",
+      vp._spot(voice) and ("ask", "set a timer for ten minutes.", "chat") in events and vp.mode == "off")
+events.clear(); vp.mode = "sleep"
+web.stt.transcribe = lambda a: "Hey Saathi."
+check("spot: name alone starts listening", vp._spot(voice) and events == ["wake"])
+events.clear(); vp.mode = "sleep"
+web.stt.transcribe = lambda a: "and then we went to the shops"
+check("spot: other speech is ignored", vp._spot(voice) is False and events == [])
+web.stt.transcribe = _real_stt
+
 print("== affirmative parsing ==")
 check("'Yes.' is affirmative", is_affirmative("Yes."))
 check("'yeah go ahead' is affirmative", is_affirmative("yeah go ahead"))

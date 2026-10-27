@@ -1,4 +1,15 @@
-# Training the "Hey Saathi" wake word
+# The "Hey Saathi" wake word
+
+**It works out of the box.** With no trained model installed, Saathi listens
+for its name a different way: the speech detector picks out short bursts of
+speech while it's idle, the local Whisper model transcribes each one, and a
+burst that starts with "Saathi" or "Hey Saathi" wakes it. "Hey Saathi, what's
+the time?" in one breath goes straight through as the request. Nothing leaves
+the Mac. The cost is compute: one transcription per burst of speech in the
+room. Set `WAKE_BY_NAME=off` in `.env` to use only Space or the orb.
+
+A trained openWakeWord model is lighter and is used automatically when it
+exists. To train one:
 
 Saathi listens for its name with [openWakeWord](https://github.com/dscripka/openWakeWord),
 which runs on your Mac. The library ships models for a few English phrases but
@@ -17,5 +28,6 @@ synthetic clips of the phrase with text-to-speech and trains a small model on th
 5. Save it as `models/hey_saathi.onnx` in this project and restart Saathi.
    Settings → Listening → Wake word sensitivity tunes how easily it fires.
 
-Until the model exists, Saathi says the wake word is unavailable and you can
-talk with Space, ⌘J in the Mac app, or by tapping the orb.
+Note: the notebook pins packages that have no builds for Python 3.13, which
+newer Colab runtimes use. Pick an older runtime version (Python 3.11) under
+Runtime → Change runtime type if the install cells fail.

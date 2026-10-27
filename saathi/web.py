@@ -86,6 +86,7 @@ class VoicePipeline:
         self.verify_at = SPEECH_MIN
         self.vad = None
         self.detector = None
+        self.spotter = None     # name spotting with Whisper when there's no model
         self.mic_on = False
         self.ready = False      # speech-to-text loaded
         self.wake_ok = False    # wake-word model loaded
@@ -116,8 +117,16 @@ class VoicePipeline:
             self.detector = WakeWordDetector()
             self.wake_ok = True
         except Exception as exc:  # noqa: BLE001
-            self.error = (self.error + " " if self.error else "") + \
-                "Wake word unavailable: {}".format(exc)
+            if self.ready and config.WAKE_BY_NAME:
+                # No trained model: listen for the name with local Whisper.
+                from .audio.spotter import NameSpotter
+
+                self.spotter = NameSpotter()
+                self.wake_ok = True
+                print("[hud] no wake-word model ({}); listening for the name with Whisper".format(exc))
+            else:
+                self.error = (self.error + " " if self.error else "") + \
+                    "Wake word unavailable: {}".format(exc)
         threading.Thread(target=self._worker, daemon=True, name="hud-voice").start()
         if self.hub.state == "idle":
             self.sleep()
@@ -205,6 +214,8 @@ class VoicePipeline:
             self.probe_state = None
             self.onset.clear()
             self.recent.clear()
+            if self.spotter is not None:
+                self.spotter.reset()
             self.cooldown = 0
             self._drain()
 
@@ -255,6 +266,10 @@ class VoicePipeline:
                 self.detector.reset()
                 self.hub.on_wake()
                 return True
+        elif mode == "sleep" and self.spotter is not None and self.vad is not None:
+            burst = self.spotter.feed(chunk, self.vad.prob(chunk))
+            if burst is not None:
+                return self._spot(burst)
         elif mode == "watch" and self.vad is not None:
             return self._watch(chunk)
         elif mode == "record" and self.turn is not None:
@@ -274,6 +289,28 @@ class VoicePipeline:
                 self._finish(turn, self.purpose)
                 return True
         return False
+
+    def _spot(self, burst):
+        """A burst of speech while asleep: wake if it starts with the name.
+        "Hey Saathi, what's the time?" in one breath goes straight through."""
+        from .audio.spotter import match
+
+        try:
+            text = stt.transcribe(burst)
+        except Exception as exc:  # noqa: BLE001 — idle noise shouldn't raise notices
+            print("[hud] name check failed: {}".format(exc))
+            return False
+        heard, rest = match(text)
+        if not heard or self.mode != "sleep":
+            return False
+        if len(rest.split()) >= 2:
+            self.pause()
+            self.hub.emit({"type": "wake"})
+            self.hub.set_state("thinking")
+            self.hub.on_utterance(rest, "confirm" if self.hub.confirm else "chat")
+        else:
+            self.hub.on_wake()
+        return True
 
     def _finish(self, turn, purpose):
         text, audio = turn.final_text(), turn.audio()

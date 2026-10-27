@@ -69,6 +69,9 @@ OPENAI_TTS_VOICE = os.getenv("OPENAI_TTS_VOICE", "alloy")
 # "Hey Saathi" is trained with openWakeWord's notebook (see docs/wake-word.md).
 WAKE_WORD_MODEL = os.getenv("WAKE_WORD_MODEL", str(ROOT / "models" / "hey_saathi.onnx"))
 WAKE_WORD_LABEL = Path(WAKE_WORD_MODEL).stem.replace("_", " ")
+# With no wake-word model, wake on the name by transcribing speech bursts
+# with the local Whisper model (more compute; off = press Space to talk).
+WAKE_BY_NAME = os.getenv("WAKE_BY_NAME", "on").strip().lower() not in ("off", "0", "false", "no")
 WAKE_THRESHOLD = _float("WAKE_THRESHOLD", 0.5)
 
 # Timings
