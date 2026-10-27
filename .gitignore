@@ -1,0 +1,20 @@
+.env
+credentials.json
+data/
+memory/
+__pycache__/
+*.pyc
+.venv/
+venv/
+.venv
+.venv.old/
+*.nosync
+frontend/node_modules
+frontend/dist/
+*.tsbuildinfo
+desktop/node_modules
+desktop/out.nosync/
+
+# Private to the author: demo/filming helpers, slide deck
+scripts/
+presentation/
