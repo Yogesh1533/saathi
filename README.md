@@ -34,6 +34,11 @@ Built by Yogesh Dhakal for the Nebius x NVIDIA Global AI Hackathon
   end-of-day skill". Saathi stores the steps and the tool calls it made, and
   "run my end-of-day skill" does it again, through the same confirmation
   gate. Three starter skills ship in `skills/`.
+- **A calm home screen.** A greeting, your next meeting, open tasks and the
+  weather, quick-action chips, a shelf of your saved skills (plain Markdown
+  files, or Agent Skills style `name/SKILL.md` folders) and a one-tap model
+  switch (Auto, Lightning, Super, Ultra). It steps aside while you talk and
+  replies fade on their own. Set `USER_NAME` in `.env` for the greeting.
 
 ## How it uses Nemotron, Token Factory and Tavily
 
