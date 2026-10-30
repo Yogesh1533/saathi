@@ -314,12 +314,15 @@ class VoicePipeline:
         "Hey Saathi, what's the time?" in one breath goes straight through."""
         from .audio.spotter import match
 
+        started = time.time()
         try:
             text = stt.transcribe(burst)
         except Exception as exc:  # noqa: BLE001 — idle noise shouldn't raise notices
             print("[hud] name check failed: {}".format(exc))
             return False
         heard, rest = match(text)
+        print("[hud] heard {!r} ({:.1f}s of audio, {:.1f}s to transcribe) -> {}".format(
+            text.strip()[:80], len(burst) / 16000, time.time() - started, "WAKE" if heard else "no name"))
         if not heard or self.mode != "sleep":
             return False
         if len(rest.split()) >= 2:

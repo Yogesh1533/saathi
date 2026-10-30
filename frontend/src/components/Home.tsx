@@ -69,7 +69,7 @@ export function ModelSwitch() {
 }
 
 // ── Greeting and the day at a glance ───────────────────────────────
-interface CalEvent { id: string; title: string; start: string; end: string; all_day: boolean }
+interface CalEvent { id: string; title: string; start: string; end: string; all_day: boolean; attendees: number }
 interface Task { id: number; title: string; due: string | null }
 interface Weather { temp: number; condition: string; days: { high: number; low: number }[] }
 
@@ -85,7 +85,8 @@ export function HomeBrief() {
   const tasks = usePanelData<Task[]>("/api/tasks", "tasks");
   const weather = usePanelData<Weather>("/api/weather", "system");
 
-  const next = (agenda.data ?? []).find((e) => !e.all_day && new Date(e.end) > now);
+  const upcoming = (agenda.data ?? []).filter((e) => !e.all_day && new Date(e.end) > now);
+  const next = upcoming.find((e) => e.attendees > 0) ?? upcoming[0]; // a meeting beats "Wake Up"
   const open = tasks.data?.length;
   const w = weather.data;
 
