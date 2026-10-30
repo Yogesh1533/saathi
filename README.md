@@ -76,6 +76,31 @@ python -m saathi web                       # the full interface at http://127.0.
 Gmail and Calendar need a one-time Google sign-in (section 5). Say "Hey
 Saathi", or press Space or tap the orb to talk. Details follow.
 
+### For judges: test it in about three minutes
+
+You need Python 3.10+, a Nebius Token Factory API key (the Builder Program
+credits work) and Node 18+ only if you want the full interface. A Tavily key
+is optional; web search falls back to DuckDuckGo without one. No Google
+sign-in is needed for the checks below.
+
+```bash
+git clone https://github.com/Yogesh1533/saathi && cd saathi
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env     # set NEBIUS_API_KEY (and TAVILY_API_KEY if you have one)
+python -m saathi text    # type to Saathi in the terminal
+```
+
+Things to try: "set a ten minute timer for the dal" (Lightning), "add a task
+to call 0412 345 678" (the phone number is masked on its way to Nebius and
+still saved), "search the web for the latest on Nebius Token Factory"
+(Tavily), "save that as my demo skill", then "run my demo skill". For the
+interface with the Brain panel (which model answered, why, tokens, masked
+values), build the frontend as above and run `python -m saathi web`.
+`python tests/smoke_test.py` runs the 291 offline checks and needs no key.
+Meeting prep, Gmail and Calendar need the one-time Google sign-in; Mac
+control tools (music, apps) need macOS.
+
 ---
 
 ## 1. Requirements
