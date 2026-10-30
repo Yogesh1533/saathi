@@ -35,8 +35,10 @@ def _result(value):
 
 
 DECLINED_MESSAGE = (
-    "The user declined the confirmation. The action was NOT performed. "
-    "Do not retry it; ask the user what they would like instead."
+    "The user pressed Decline. The action was NOT performed and nothing was sent or changed. "
+    "Tell them in one short sentence that you did not do it, and offer one alternative "
+    "(for example keeping it as a draft). Do not ask them to confirm again and do not "
+    "call the tool again."
 )
 
 _MODEL_CHOICES = (
