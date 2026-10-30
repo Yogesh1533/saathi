@@ -1167,6 +1167,11 @@ check("name respelled for the voice", tts_mod.pronounce("Hi, I'm Saathi.") == "H
 check("Devanagari name respelled", "Saahtee" in tts_mod.pronounce("साथी here"))
 check("other words untouched", tts_mod.pronounce("Saathiya sathi") == "Saathiya sathi")
 
+vp_dbg = web.VoicePipeline(SimpleNamespace(state="idle", emit=lambda m: None))
+vp_dbg.feed(np.zeros(1280, dtype=np.int16).tobytes())
+dbg = vp_dbg.debug()
+check("voice debug counts audio frames even while the pipeline is off", dbg["frames_received"] == 1 and dbg["mode"] == "off")
+
 print("== web search (live, needs network) ==")
 try:
     from saathi.tools import websearch

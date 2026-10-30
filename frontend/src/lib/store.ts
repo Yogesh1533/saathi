@@ -153,6 +153,8 @@ interface State {
   online: boolean;
   layout: Layout;
   voice: VoiceStatus;
+  /** Why this window cannot use its microphone right now, if it cannot. */
+  micError: string | null;
   config: ServerConfig | null;
   caption: { role: "user" | "saathi"; text: string; key: number } | null;
   hearing: Hearing | null;
@@ -188,6 +190,7 @@ export const useStore = create<State>((set, get) => ({
   online: false,
   layout: desktop?.layout ?? (new URLSearchParams(location.search).get("mode") === "orb" ? "orb" : "full"),
   voice: { ready: false, wake: false, mic: false, error: null, wake_word: "hey saathi" },
+  micError: null,
   config: null,
   caption: null,
   hearing: null,

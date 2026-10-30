@@ -62,6 +62,9 @@ function handle(msg: ServerMsg) {
     case "voice": {
       const { ready, wake, mic, error, wake_word } = msg;
       s.set({ voice: { ready, wake, mic, error, wake_word } });
+      // Another window that owned the mic can close and leave the server deaf to
+      // this one: if ours is open, claim it again.
+      if (!mic && audio.micActive && s.local.mic) link.send({ type: "mic", on: true });
       break;
     }
     case "wake":

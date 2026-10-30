@@ -31,6 +31,7 @@ import queue
 import random
 import re
 import threading
+import time
 from collections import deque
 from contextlib import asynccontextmanager
 
@@ -88,6 +89,8 @@ class VoicePipeline:
         self.detector = None
         self.spotter = None     # name spotting with Whisper when there's no model
         self.mic_on = False
+        self.frames_in = 0      # audio frames received from the browser, for /api/voice
+        self.last_frame = 0.0
         self.ready = False      # speech-to-text loaded
         self.wake_ok = False    # wake-word model loaded
         self.error = None
@@ -141,12 +144,24 @@ class VoicePipeline:
 
     # -- control (any thread) -------------------------------------------
     def set_mic(self, on):
+        if bool(on) != self.mic_on:
+            print("[hud] microphone {}".format("on" if on else "off"))
         self.mic_on = bool(on)
         if not self.mic_on:
             self._set_mode("off")
         elif self.hub.state == "idle":
             self.sleep()
         self.hub.emit(self.status())
+
+    def debug(self):
+        """What the voice pipeline sees right now (GET /api/voice)."""
+        return {
+            "mic_on": self.mic_on, "mode": self.mode, "speech_to_text_ready": self.ready,
+            "wake_listening": self.wake_ok, "wake_by_name": self.spotter is not None,
+            "frames_received": self.frames_in,
+            "seconds_since_last_frame": round(time.time() - self.last_frame, 1) if self.last_frame else None,
+            "error": self.error,
+        }
 
     def sleep(self):
         """Back to waiting for the wake word (if we can hear it)."""
@@ -229,6 +244,10 @@ class VoicePipeline:
 
     # -- audio path ------------------------------------------------------
     def feed(self, data):
+        if self.frames_in == 0:
+            print("[hud] audio is arriving from the browser")
+        self.frames_in += 1
+        self.last_frame = time.time()
         if self.mode == "off":
             return
         try:
@@ -1063,6 +1082,11 @@ def api_system():
     from .tools import system
 
     return _safe(system.data)
+
+
+@app.get("/api/voice")
+def api_voice():
+    return {"data": hub.voice.debug()}
 
 
 @app.get("/api/skills")

@@ -84,6 +84,7 @@ export function TopBar() {
   const online = useStore((s) => s.online);
   const voice = useStore((s) => s.voice);
   const wantMic = useStore((s) => s.local.mic);
+  const micError = useStore((s) => s.micError);
   const setDrawer = (d: "history" | "settings") =>
     useStore.getState().set({ drawer: useStore.getState().drawer === d ? null : d, palette: false });
 
@@ -92,10 +93,13 @@ export function TopBar() {
     return () => clearInterval(id);
   }, []);
 
+  const micIssue = online && (!wantMic || !!micError || !voice.mic);
   const status = !online
     ? "Reconnecting to the server"
-    : !voice.mic
-      ? wantMic ? "Waiting for a microphone" : "Microphone off"
+    : micError
+      ? micError.split(".")[0]
+      : !voice.mic
+      ? wantMic ? "Connecting the microphone" : "Microphone off. Tap to turn it on"
       : !voice.ready
         ? "Loading voice"
         : voice.wake
@@ -106,10 +110,17 @@ export function TopBar() {
     <header className="topbar">
       <div className="brand">
         <span className="brand-mark"><SaathiMark />Saathi</span>
-        <span className={"link-state " + (online && voice.mic && voice.ready ? "ok" : online ? "warn" : "down")}>
-          <i aria-hidden="true" />
-          {status}
-        </span>
+        {micIssue ? (
+          <button className="link-state warn" onClick={() => setMic(true)} title={micError ?? "Turn the microphone on"}>
+            <i aria-hidden="true" />
+            {status}
+          </button>
+        ) : (
+          <span className={"link-state " + (online && voice.mic && voice.ready ? "ok" : online ? "warn" : "down")}>
+            <i aria-hidden="true" />
+            {status}
+          </span>
+        )}
       </div>
       <div className="chrono">
         <time className="chrono-time" dateTime={now.toISOString()}>
