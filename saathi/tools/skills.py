@@ -53,18 +53,22 @@ def _parse(path):
         for line in head.splitlines():
             key, _, value = line.partition(":")
             meta[key.strip()] = value.strip()
-    meta.setdefault("name", path.stem)
+    meta.setdefault("name", path.parent.name if path.name == "SKILL.md" else path.stem)
     meta["body"] = body.strip()
     meta["path"] = path
     return meta
 
 
 def _all():
+    """Flat files (name.md) and Agent Skills folders (name/SKILL.md) both work,
+    so a skill written for Claude can be dropped straight in."""
     found = {}
     for folder in (config.STARTER_SKILLS_DIR, config.SKILLS_DIR):
         if folder.exists():
-            for path in sorted(folder.glob("*.md")):
+            paths = sorted(folder.glob("*.md")) + sorted(folder.glob("*/SKILL.md"))
+            for path in paths:
                 skill = _parse(path)
+                skill["root"] = folder
                 found[_slug(skill["name"])] = skill
     return found
 
@@ -125,12 +129,28 @@ def run(name):
     )
 
 
+def data():
+    """Skills for the HUD shelf: newest of your own first, then the starters."""
+    rows = []
+    for key, s in _all().items():
+        rows.append({
+            "name": key,
+            "description": s.get("description", ""),
+            "starter": s["root"] == config.STARTER_SKILLS_DIR,
+            "created": s.get("created", ""),
+            "body": s["body"],
+        })
+    rows.sort(key=lambda r: r["created"], reverse=True)
+    rows.sort(key=lambda r: r["starter"])   # stable: yours first, newest first
+    return rows
+
+
 def list_skills():
     skills = _all()
     if not skills:
         return "No skills yet. Do something once, then say 'save that as a skill'."
     return "\n".join(
-        "{}{}: {}".format(k, " (starter)" if s["path"].parent == config.STARTER_SKILLS_DIR else "",
+        "{}{}: {}".format(k, " (starter)" if s["root"] == config.STARTER_SKILLS_DIR else "",
                           s.get("description", ""))
         for k, s in skills.items()
     )
@@ -140,9 +160,11 @@ def delete(name, _confirmed=False):
     from . import ConfirmationRequired
 
     skill = _find(name)
-    if skill["path"].parent != config.SKILLS_DIR:
+    if skill["root"] != config.SKILLS_DIR:
         raise ValueError("'{}' is a starter skill; save your own version to replace it".format(skill["name"]))
     if not _confirmed:
         raise ConfirmationRequired("Delete your skill '{}'?".format(skill["name"]))
+    if skill["path"].name == "SKILL.md":
+        raise ValueError("'{}' is a skill folder; remove it from data/skills by hand".format(skill["name"]))
     skill["path"].unlink()
     return "Skill '{}' deleted.".format(skill["name"])

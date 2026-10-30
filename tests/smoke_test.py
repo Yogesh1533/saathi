@@ -462,6 +462,18 @@ tools.execute("skill_delete", {"name": "pr-review"}, lambda p: True)
 check("skills: confirmed delete removes it", not (config.SKILLS_DIR / "pr-review.md").exists())
 check("skills: starter skills can't be deleted", "starter skill" in tools.execute("skill_delete", {"name": "end-of-day"}, lambda p: True)[0])
 
+rows = skills.data()
+check("skills: shelf data lists starters with descriptions",
+      {"morning-kickoff", "end-of-day"} <= {r["name"] for r in rows} and all(r["starter"] and r["description"] for r in rows))
+folder = config.SKILLS_DIR / "trip-plan"
+folder.mkdir(parents=True)
+(folder / "SKILL.md").write_text("---\nname: trip-plan\ndescription: Plan a short trip\n---\n\n## Steps\n\n1. Check the weather")
+rows = skills.data()
+check("skills: Agent Skills folders (name/SKILL.md) load, yours before starters",
+      rows[0]["name"] == "trip-plan" and not rows[0]["starter"] and "Check the weather" in rows[0]["body"])
+check("skills: folder skills run by name", "Check the weather" in skills.run("trip plan"))
+check("skills: folder skills can't be deleted by voice", "skill folder" in tools.execute("skill_delete", {"name": "trip-plan"}, lambda p: True)[0])
+
 print("== wake on the name ==")
 from saathi import web  # noqa: E402
 from saathi.audio import spotter  # noqa: E402

@@ -159,8 +159,11 @@ export function StatusLine() {
 
 export function Caption({ compact = false }: { compact?: boolean }) {
   const caption = useStore((s) => s.caption);
+  const mode = useStore((s) => s.mode);
   const [shown, setShown] = useState("");
+  const [leaving, setLeaving] = useState(false);
   useEffect(() => {
+    setLeaving(false);
     if (!caption) return;
     if (caption.role === "user") {
       setShown(caption.text);
@@ -177,9 +180,23 @@ export function Caption({ compact = false }: { compact?: boolean }) {
     }, perChar);
     return () => clearInterval(id);
   }, [caption]);
+  // Once the turn is over the words stay a moment, then fade, so the orb is left clean.
+  const settled = mode === "idle" || mode === "listening";
+  useEffect(() => {
+    if (!caption || !settled) return;
+    const linger = Math.min(9000, 3200 + caption.text.length * 45);
+    const fade = setTimeout(() => setLeaving(true), linger);
+    const clear = setTimeout(() => {
+      if (useStore.getState().caption?.key === caption.key) useStore.getState().set({ caption: null });
+    }, linger + 700);
+    return () => {
+      clearTimeout(fade);
+      clearTimeout(clear);
+    };
+  }, [caption, settled]);
   if (!caption) return null;
   return (
-    <div className={"caption caption-" + caption.role + (compact ? " compact" : "")} key={caption.key}>
+    <div className={"caption caption-" + caption.role + (compact ? " compact" : "") + (leaving ? " leaving" : "")} key={caption.key}>
       <span className="caption-who">{caption.role === "user" ? "You" : "Saathi"}</span>
       <p>{shown}</p>
     </div>
@@ -210,17 +227,9 @@ export function ToolTrace() {
 }
 
 // ── Command bar ────────────────────────────────────────────────────
-const QUICK = [
-  { label: "Brief me", text: "Good morning. Brief me on my day." },
-  { label: "Today's schedule", text: "What's on my calendar today?" },
-  { label: "Unread mail", text: "Anything important in my unread email?" },
-  { label: "Headlines", text: "What are today's top headlines?" },
-];
-
 export function CommandBar({ inputRef }: { inputRef: React.RefObject<HTMLInputElement> }) {
   const [text, setText] = useState("");
   const mic = useStore((s) => s.local.mic);
-  const mode = useStore((s) => s.mode);
   const confirm = useStore((s) => s.confirm);
 
   const submit = (e: React.FormEvent) => {
@@ -233,13 +242,6 @@ export function CommandBar({ inputRef }: { inputRef: React.RefObject<HTMLInputEl
 
   return (
     <div className="command">
-      <div className="quick" role="group" aria-label="Quick requests">
-        {QUICK.map((q) => (
-          <button key={q.label} className="chip" onClick={() => ask(q.text)} disabled={mode === "thinking"}>
-            {q.label}
-          </button>
-        ))}
-      </div>
       <form className="command-bar" onSubmit={submit}>
         <button
           type="button"
@@ -313,7 +315,7 @@ export function Toasts() {
 }
 
 // ── Drawers ────────────────────────────────────────────────────────
-function Drawer({ title, children }: { title: string; children: React.ReactNode }) {
+export function Drawer({ title, children }: { title: string; children: React.ReactNode }) {
   const close = () => useStore.getState().set({ drawer: null });
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && close();

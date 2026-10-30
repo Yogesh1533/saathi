@@ -559,6 +559,7 @@ class Hub:
                 "stt": stt.provider(),
                 "google": config.GOOGLE_TOKEN_PATH.exists(),
                 "tools": len(tools.TOOL_SCHEMAS),
+                "name": config.USER_NAME,
             },
         }
 
@@ -1062,6 +1063,13 @@ def api_system():
     from .tools import system
 
     return _safe(system.data)
+
+
+@app.get("/api/skills")
+def api_skills():
+    from .tools import skills
+
+    return _safe(skills.data)
 
 
 @app.get("/api/tasks")

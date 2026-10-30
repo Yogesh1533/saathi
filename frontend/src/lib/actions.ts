@@ -120,6 +120,9 @@ export function runHudAction(action: string) {
     case "open_history":
       s.set({ drawer: "history", palette: false });
       break;
+    case "open_skills":
+      s.set({ drawer: "skills", palette: false });
+      break;
     case "open_settings":
       s.set({ drawer: "settings", palette: false });
       break;

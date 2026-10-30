@@ -800,7 +800,7 @@ TOOL_SCHEMAS = [
         "name": "hud_control",
         "description": (
             "Operate the HUD: set_theme (value diyo|himal|dhaka), "
-            "open_history, open_settings, open_palette, close_panels, "
+            "open_history, open_settings, open_skills, open_palette, close_panels, "
             "clear_cards, orb_mode (shrink to the floating orb), full_mode, "
             "toggle_fullscreen, mute_mic (stop listening until the user "
             "presses Command-J)."
@@ -811,7 +811,7 @@ TOOL_SCHEMAS = [
                 "action": {
                     "type": "string",
                     "enum": [
-                        "set_theme", "open_history", "open_settings", "open_palette",
+                        "set_theme", "open_history", "open_settings", "open_skills", "open_palette",
                         "close_panels", "clear_cards", "orb_mode", "full_mode",
                         "toggle_fullscreen", "mute_mic",
                     ],

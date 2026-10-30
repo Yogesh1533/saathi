@@ -118,5 +118,7 @@ SYSTEM_PROMPT_PATH = _path(
 )
 MEMORY_DIR = _path("MEMORY_DIR", "./memory")
 DB_PATH = _path("DB_PATH", "./data/saathi.db")
+# First name for the greeting on the home screen (optional).
+USER_NAME = os.getenv("USER_NAME", "").strip()
 SKILLS_DIR = _path("SKILLS_DIR", "./data/skills")     # the user's own skills
 STARTER_SKILLS_DIR = ROOT / "skills"                  # shipped with the project
