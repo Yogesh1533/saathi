@@ -747,7 +747,7 @@ class Hub:
         self.emit({"type": "confirm", "prompt": prompt})
         headline = prompt.split("\n")[0]
         self.say(
-            headline + " Say yes to confirm, or anything else to cancel.",
+            headline + " Say yes to confirm.",
             kind="say", then="confirm", speak=settings.get()["speak"] or self.turn_source == "voice",
         )
         event.wait(timeout=120)
