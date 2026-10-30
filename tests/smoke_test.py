@@ -481,6 +481,7 @@ from saathi.audio import spotter  # noqa: E402
 check("spot: 'Hey Saathi' alone", spotter.match("Hey Saathi.") == (True, ""))
 check("spot: request in the same breath", spotter.match("Hey, Saathi, what's the time?") == (True, "what's the time?"))
 check("spot: common mishearings", all(spotter.match(t)[0] for t in ("Sathi, pause the music", "okay saati", "Hi Sarthi")))
+check("spot: how the spoken name is usually transcribed", all(spotter.match(t)[0] for t in ("Hey Sati, set a timer", "hey Saatee.", "Hey Satee")))
 check("spot: the name later in a sentence doesn't wake", not spotter.match("I told my saathi about it")[0])
 check("spot: other words don't wake", not any(spotter.match(t)[0] for t in ("Thank you.", "Satisfied?", "hey Siri")))
 

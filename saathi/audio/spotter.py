@@ -14,7 +14,7 @@ import re
 import numpy as np
 
 # Whisper is primed with "Saathi", but still hears it a few ways.
-_NAME = r"(?:saathi|saathee|sathi|sathee|saati|saathy|sathy|sarthi|saarthi|sadhi)"
+_NAME = r"(?:saathi|saathee|saatee|sathi|sathee|satee|saati|sati|saathy|sathy|sarthi|saarthi|sadhi)"
 _WAKE = re.compile(
     r"^\W*(?:(?:hey|hi|hello|ok|okay|oi|o)\W+)?" + _NAME + r"\b[\s,.!?:;-]*(?P<rest>.*)$",
     re.I | re.S,
