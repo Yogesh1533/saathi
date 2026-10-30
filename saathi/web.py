@@ -582,6 +582,7 @@ class Hub:
                 "google": config.GOOGLE_TOKEN_PATH.exists(),
                 "tools": len(tools.TOOL_SCHEMAS),
                 "name": config.USER_NAME,
+                "tavily": bool(config.TAVILY_API_KEY),
             },
         }
 

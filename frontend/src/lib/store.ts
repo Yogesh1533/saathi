@@ -45,6 +45,7 @@ export interface ServerConfig {
   google: boolean;
   tools: number;
   name?: string;
+  tavily?: boolean;
 }
 
 /** Settings that live on the server, so voice commands and every window agree. */
